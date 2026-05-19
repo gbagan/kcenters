@@ -1,0 +1,1 @@
+export type Mode = "play" | "move" | "addv" | "adde" | "delete";

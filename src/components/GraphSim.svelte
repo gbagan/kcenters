@@ -4,11 +4,12 @@
   type Props = {
     graph: Graph;
     labels: number[];
+    player: 1 | 2;
     phones: number[];
     arcs: [number, number][];
   }
 
-  let { graph, labels, phones, arcs }: Props = $props();
+  let { graph, player, labels, phones, arcs }: Props = $props();
 
   function arrowPath(x1: number, y1: number, x2: number, y2: number) {
     const arrowSize = 6;
@@ -67,9 +68,18 @@
       cy={200 * y}
       r="5"
       stroke="black"
-      fill={labels[i] === 0 ? "lightblue" : labels[i] === -1 ? "white" : "lightgreen"}
+      fill={labels[i] === -1 ? "white" : labels[i] > 0 ? "lightgreen" : player === 1 ? "lightblue" : "orange"}
       stroke-width="1"
     />
+    {#if labels[i] > 0}
+      <text
+        x={200 * x}
+        y={200 * y + 3.5}
+        text-anchor="middle"
+        class="text"
+      > {labels[i]}
+      </text>
+    {/if}
   {/each}
   {#each phones as i}
     {@const {x, y} = graph.layout[i]}
@@ -93,5 +103,11 @@
 
   .phone {
     transition: transform linear 1s;
+  }
+
+  .text {
+    font: bold 10px sans-serif;
+    fill: black;
+    user-select: none;
   }
 </style>

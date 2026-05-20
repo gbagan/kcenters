@@ -28,6 +28,7 @@
     <div class="graph-container">
       <GraphSim
         {graph}
+        player={1}
         labels={sim1.labels}
         arcs={sim1.arcs}
         phones={sim1.phones}
@@ -39,6 +40,7 @@
     <div class="graph-container">
       <GraphSim
         {graph}
+        player={2}
         labels={sim2.labels}
         arcs={sim2.arcs}
         phones={sim2.phones}

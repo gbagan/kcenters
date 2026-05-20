@@ -45,6 +45,12 @@
     mode = "play1";
   }
 
+  function setGraph(i: number) {
+    graphIndex = i;
+    centers1 = [];
+    centers2 = [];
+  }
+
   function saveGraph() {
     if (graphIndex < 5) return;
     const json = JSON.stringify(graph);
@@ -58,6 +64,8 @@
       toast.error("Le texte que vous avez entré ne représente pas un graphe valide");
     } else {
       graphs = graphs.with(graphIndex, g);
+      centers1 = [];
+      centers2 = [];
     }
     importDialog.close();
   }
@@ -146,8 +154,8 @@
       {nbCenters}
       canSimulate={centers1.length === nbCenters && centers2.length === nbCenters}
       {setNbCenters}
-      setGraph={i => graphIndex = i}
-      edit={edit}
+      {setGraph}
+      {edit}
       play={i => i === 1? (mode = "play1") : (mode = "play2")}
       {simulate}
       {saveGraph}

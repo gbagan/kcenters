@@ -30,7 +30,7 @@
     <option value="1">Confluence</option>
     <option value="2">Lapin</option>
     <option value="3">Poisson</option>
-    <option value="4">Gros graphe</option>
+    <option value="4">Grille</option>
     <option value="5">Graphe personnalisé 1</option>
     <option value="6">Graphe personnalisé 2</option>
     <option value="7">Graphe personnalisé 3</option>

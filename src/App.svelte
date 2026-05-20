@@ -1,99 +1,119 @@
 <script lang="ts">
   import { arrayOf, sleep } from "@gbagan/utils";
+  import { type Mode } from "./types";
   import GraphView from "./components/GraphView.svelte";
   import { addEdge, addVertex, emptyGraph, graph1, moveVertex, removeEdge, removeVertex } from "./lib/graph";
-  import { type Mode } from "./types";
+  import Config from "./components/Config.svelte";
+  import Simulation from "./components/Simulation.svelte";
 
+  let graphIndex = $state(0);
+  let nbCenters = $state(1);
   let graph = $state.raw(graph1);
-  let phase = $state(0);
-  let mode = $state<Mode>("addv");
-  let centers = $state.raw<number[]>([]);
-  let phones = $state.raw<number[]>([]);
-  let arcs = $state.raw<[number, number][]>([]);
+  let mode = $state<Mode>("play1");
+  let centers1 = $state.raw<number[]>([]);
+  let centers2 = $state.raw<number[]>([]);
 
-  let labels = $derived.by(() => {
-    const res = arrayOf(graph.layout.length, -1);
-    for (const c of centers) {
-      res[c] = 0;
-    }
-    return res;
-  });
-
-  function propagate(): [number, number][] {
-    const arcs: [number, number][] = [];
-    for (const [u, v] of graph.edges) {
-      if (labels[u] !== -1 && labels[v] === -1) {
-        arcs.push([u, v]);
-      } else if (labels[v] !== -1 && labels[u] === -1) {
-        arcs.push([v, u]);
-      }
-    }
-    return arcs;
+  function setNbCenters(nb: number) {
+    nbCenters = nb;
+    centers1 = [];
+    centers2 = [];
   }
 
   function edit() {
     mode = "addv";
-    centers = [];
-    phones = [];
-    arcs = [];
-    phase = 0;
-    labels = arrayOf(graph.layout.length, -1);
+    centers1 = [];
+    centers2 = [];
   }
 
-  async function simulate() {
-    let iter = 0;
-    while (true) {
-      iter++;
-      const newArcs = propagate();
-      if (newArcs.length === 0) break;
-      phase = iter;
-      phones = newArcs.map(([v, _]) => v);
-      await sleep(50);
-      phones = newArcs.map(([_, v]) => v);
-      await sleep(1000);
-      phones = [];
-      const labels2 = [...labels];
-      for (const [_, v] of newArcs) {
-        labels2[v] = iter;
-      }
-      labels = labels2;
-      arcs = arcs.concat(newArcs);
-      await sleep(500);
+  function chooseVertex(i: number) {
+    if (mode === "play1") {
+      centers1 = centers1.includes(i) ? centers1.filter(c => c !== i) : [...centers1, i];
+    } else if (mode === "play2") {
+      centers2 = centers2.includes(i) ? centers2.filter(c => c !== i) : [...centers2, i];
     }
   }
 
+  function simulate() {
+    mode = "sim";
+  }
+
+  function simLeave() {
+    mode = "play1";
+  }
 </script>
 
-<div class="container">
-  <div class="graph-container">
-    <span class="phase">Phase {phase}</span>
-    <GraphView 
-      {graph}
-      {mode}
-      {labels}
-      {arcs}
-      {phones}
-      addVertex={(pos) => graph = addVertex(graph, pos)}
-      moveVertex={(idx, pos) => graph = moveVertex(graph, idx, pos)}
-      addEdge={(u, v) => graph = addEdge(graph, u, v)}
-      removeVertex={(idx) => graph = removeVertex(graph, idx)}
-      removeEdge={(edge) => graph = removeEdge(graph, edge)}
-      chooseVertex={i => centers = centers.includes(i) ? centers.filter(c => c !== i) : [...centers, i]}
-    />
-    <div class="btngroup">
-      <button class="ui-button" disabled={mode === "play"} onclick={() => mode = "move"}>Déplacer</button>
-      <button class="ui-button" disabled={mode === "play"} onclick={() => mode = "addv"}>Ajouter sommet</button>
-      <button class="ui-button" disabled={mode === "play"} onclick={() => mode = "adde"}>Ajouter arête</button>
-      <button class="ui-button" disabled={mode === "play"} onclick={() => mode = "delete"}>Retirer</button>
-      <button class="ui-button" disabled={mode === "play"} onclick={() => graph = emptyGraph()}>Tout effacer</button>
+{#if mode === "sim"}
+  <Simulation {graph} {centers1} {centers2} leave={simLeave} />
+{:else}
+  <div class="container">
+    <div class="main-container">
+      <div class="graph-container">
+        <GraphView 
+          {graph}
+          {mode}
+          {centers1}
+          {centers2}
+          addVertex={pos => graph = addVertex(graph, pos)}
+          moveVertex={(idx, pos) => graph = moveVertex(graph, idx, pos)}
+          addEdge={(u, v) => graph = addEdge(graph, u, v)}
+          removeVertex={(idx) => graph = removeVertex(graph, idx)}
+          removeEdge={(edge) => graph = removeEdge(graph, edge)}
+          {chooseVertex}
+        />
+      </div>
+      <div class="btngroup">
+        <button
+          class={["btn left", { active: mode === "move" }]}
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={() => mode = "move"}
+        >
+          <span class="check">✓</span> Déplacer
+        </button>
+        <button
+          class={["btn", { active: mode === "addv" }]}
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={() => mode = "addv"}
+        >
+          <span class="check">✓</span> Ajouter sommet
+        </button>
+        <button
+          class={["btn", { active: mode === "adde" }]}
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={() => mode = "adde"}
+        >
+          <span class="check">✓</span> Ajouter arête
+        </button>
+        <button
+          class={["btn", { active: mode === "delete" }]}
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={() => mode = "delete"}
+        >
+          <span class="check">✓</span> Retirer
+        </button>
+        <button
+          class="btn right"
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={() => graph = emptyGraph()}
+        >
+           Tout effacer
+        </button>
+      </div>
     </div>
+    <Config
+      {mode}
+      {nbCenters}
+      canSimulate={centers1.length === nbCenters && centers2.length === nbCenters}
+      {setNbCenters}
+      setGraph={i => {}}
+      edit={edit}
+      play={i => i === 1? (mode = "play1") : (mode = "play2")}
+      simulate={simulate}
+      saveGraph={() => {}}
+      openImportDialog={() => {}}
+      exportGraph={() => {}}
+    />
   </div>
-  <div>
-    <button class="ui-button" onclick={edit}>Editer</button>
-    <button class="ui-button" onclick={() => mode = "play"}>Jouer</button>
-    <button class="ui-button" onclick={simulate}>Simuler</button>
-  </div>
-</div>
+{/if}
 
 <style>
   .container {
@@ -101,20 +121,15 @@
     justify-content: space-around;
   }
 
-  .graph-container {
+  .main-container {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
 
-  .phase {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-right: 1em;
-    color: var(--blue-500);
-  }
-
-  .btngroup {
-    display: inline-flex;
+  .graph-container {
+    width: 40rem;
+    touch-action: none;
+    border: 1px solid var(--border);
   }
 </style>

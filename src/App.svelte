@@ -2,7 +2,8 @@
   import toast, {Toaster} from 'svelte-5-french-toast'
   import { type Mode } from "./types";
   import GraphView from "./components/GraphView.svelte";
-  import { addEdge, addVertex, emptyGraph, graph1, initialGraphs, jsonToGraph, moveVertex, removeEdge, removeVertex } from "./lib/graph";
+  import { addEdge, addVertex, emptyGraph, generateDelaunay, grid,
+    initialGraphs, jsonToGraph, moveVertex, removeEdge, removeVertex } from "./lib/graph";
   import Config from "./components/Config.svelte";
   import Simulation from "./components/Simulation.svelte";
 
@@ -15,7 +16,9 @@
   let centers1 = $state.raw<number[]>([]);
   let centers2 = $state.raw<number[]>([]);
   let dialogContent = $state("");
-  let importDialog!: HTMLDialogElement;
+  let dialogEl!: HTMLDialogElement;
+  let dialog: "import" | "gen" | "none" = $state("none");
+  let genText = $state("");
 
   function setNbCenters(nb: number) {
     nbCenters = nb;
@@ -67,7 +70,7 @@
       centers1 = [];
       centers2 = [];
     }
-    importDialog.close();
+    dialogEl.close();
   }
 
   function openImportDialog() {
@@ -75,14 +78,65 @@
       .readText()
       .then((text) => dialogContent = text)
       .catch(() => dialogContent = "")
-      .finally(() => importDialog.showModal())
+      .finally(() => {
+        dialog = "import";
+        dialogEl.showModal();
+      })
   }
 
+  function openGenDialog() {
+    dialog = "gen";
+    dialogEl.showModal();
+  }
 
   function exportGraph() {
     navigator.clipboard.writeText(JSON.stringify(graph));
     toast.success("Le graphe a été copié dans le presse-papier");
   }
+
+  function generateGraph() {
+    try {
+      let words = genText.split(" ");
+      function checkArgsCount(n: number) {
+        if (words.length !== n) {
+          throw new Error("Nombre d'arguments invalide");
+        }
+      }
+      function checkInteger(n: number) {
+        if (isNaN(n) || !Number.isInteger(n) || n <= 0) {
+          throw new Error("L'argument doit être un entier positif");
+        }
+      }
+
+
+      console.log(words);
+      if (words.length === 0) {
+        throw new Error("Entrée vide");
+      }
+      switch (words[0]) {
+        case "grid":
+          checkArgsCount(3);
+          const n = Number(words[1]);
+          const m = Number(words[2]);
+          checkInteger(n);
+          checkInteger(m);
+          graphs = graphs.with(graphIndex, grid(n, m));
+          break;
+        case "delaunay":
+          checkArgsCount(2);
+          const n2 = Number(words[1]);
+          checkInteger(n2);
+          graphs = graphs.with(graphIndex, generateDelaunay(n2));
+        default:
+          throw new Error("Fonction non supportée");
+      }
+    } catch(e) {
+      toast.error("Entrée invalide: " + (e as Error).message);
+    } finally {
+      dialogEl.close();
+    }
+  }
+
 </script>
 
 {#if mode === "sim"}
@@ -141,11 +195,18 @@
           Tout effacer
         </button>
         <button
-          class="btn right"
+          class="btn"
           disabled={mode === "play1" || mode === "play2"}
           onclick={() => graphs = graphs.with(graphIndex, initialGraphs[graphIndex])}
         >
           Réinitialiser
+        </button>
+        <button
+          class="btn right"
+          disabled={mode === "play1" || mode === "play2"}
+          onclick={openGenDialog}
+        >
+          Générer
         </button>
       </div>
     </div>
@@ -164,20 +225,36 @@
     />
   </div>
 {/if}
-<dialog bind:this={importDialog}>
-  <div class="dialog-title">Importer un graphe</div>
-  <div class="dialog-body" >
-    <textarea
-      class="textarea"
-      cols="100"
-      rows="20"
-      bind:value={dialogContent}
-    ></textarea>
-  </div>
-  <div class="dialog-buttons">
-    <button class="btn rounded-lg" onclick={() => importDialog.close()}>Annuler</button>
-    <button class="btn rounded-lg" autofocus onclick={importGraph}>OK</button>
-  </div>
+<dialog bind:this={dialogEl}>
+  {#if dialog === "import"}
+    <div class="dialog-title">Importer un graphe</div>
+    <div class="dialog-body" >
+      <textarea
+        class="textarea"
+        cols="100"
+        rows="20"
+        bind:value={dialogContent}
+      ></textarea>
+    </div>
+    <div class="dialog-buttons">
+      <button class="btn rounded-lg" onclick={() => dialogEl.close()}>Annuler</button>
+      <button class="btn rounded-lg" autofocus onclick={importGraph}>OK</button>
+    </div>
+  {:else if dialog === "gen"}
+    <div class="dialog-title">Générer un graphe</div>
+    <div class="dialog-body" >
+      <textarea
+        class="textarea"
+        cols="800"
+        rows="2"
+        bind:value={genText}
+      ></textarea>
+    </div>
+    <div class="dialog-buttons">
+      <button class="btn rounded-lg" onclick={() => dialogEl.close()}>Annuler</button>
+      <button class="btn rounded-lg" autofocus onclick={generateGraph}>OK</button>
+    </div>
+  {/if}
 </dialog>
 <Toaster />
 

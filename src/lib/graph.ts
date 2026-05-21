@@ -1,5 +1,6 @@
 import { times } from "@gbagan/utils";
 import { tabulate2 } from "./util";
+import { delaunay } from "./delaunay";
 
 export type Edge = [number, number];
 
@@ -106,7 +107,7 @@ export function jsonToGraph (json: string): Graph | null {
   }
 }
 
-function grid(n: number, m: number): Graph {
+export function grid(n: number, m: number): Graph {
   const p = Math.max(n, m);
   return {
     layout: tabulate2(n, m, (i, j) => ({
@@ -118,6 +119,18 @@ function grid(n: number, m: number): Graph {
       ...tabulate2(n - 1, m, (i, j) => [i * m + j, i * m + j + m] as Edge)
     ]
   }
+}
+
+export function generateDelaunay(n: number): Graph {
+  const threshold = n <= 10 ? 0.04 : 0.01; // todo
+  const points: Position[] = [];
+  while (points.length < n) {
+    const p = {x: 0.05 + 0.9 * Math.random(), y: 0.05 + 0.9 * Math.random()}
+    if (points.every(p2 => (p.x - p2.x) ** 2 + (p.y - p2.y) ** 2 > threshold)) {
+      points.push(p);
+    }
+  }
+  return { layout: points, edges: delaunay(points) };
 }
 
 

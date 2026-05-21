@@ -108,27 +108,23 @@
         }
       }
 
-
-      console.log(words);
       if (words.length === 0) {
         throw new Error("Entrée vide");
       }
-      switch (words[0]) {
-        case "grid":
-          checkArgsCount(3);
-          const n = Number(words[1]);
-          const m = Number(words[2]);
-          checkInteger(n);
-          checkInteger(m);
-          graphs = graphs.with(graphIndex, grid(n, m));
-          break;
-        case "delaunay":
-          checkArgsCount(2);
-          const n2 = Number(words[1]);
-          checkInteger(n2);
-          graphs = graphs.with(graphIndex, generateDelaunay(n2));
-        default:
-          throw new Error("Fonction non supportée");
+      if (words[0] === "grid") {
+        checkArgsCount(3);
+        const n = Number(words[1]);
+        const m = Number(words[2]);
+        checkInteger(n);
+        checkInteger(m);
+        graphs = graphs.with(graphIndex, grid(n, m));
+      } else if (words[0] === "delaunay") {
+        checkArgsCount(2);
+        const n = Number(words[1]);
+        checkInteger(n);
+        graphs = graphs.with(graphIndex, generateDelaunay(n));
+      } else {
+        throw new Error("Fonction non supportée");
       }
     } catch(e) {
       toast.error("Entrée invalide: " + (e as Error).message);
@@ -267,6 +263,7 @@
   .main-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1rem;
   }
 

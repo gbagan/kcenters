@@ -6,9 +6,9 @@
     initialGraphs, jsonToGraph, moveVertex, removeEdge, removeVertex } from "./lib/graph";
   import Config from "./components/Config.svelte";
   import Simulation from "./components/Simulation.svelte";
+  import { xoroshiro128Plus } from '@gbagan/rng';
 
   let graphs = $state.raw(initialGraphs);
-
   let graphIndex = $state(0);
   let nbCenters = $state(1);
   let graph = $derived(graphs[graphIndex]);
@@ -16,9 +16,13 @@
   let centers1 = $state.raw<number[]>([]);
   let centers2 = $state.raw<number[]>([]);
   let dialogContent = $state("");
-  let dialogEl!: HTMLDialogElement;
   let dialog: "import" | "gen" | "none" = $state("none");
   let genText = $state("");
+
+  const rng = xoroshiro128Plus();
+
+  let dialogEl!: HTMLDialogElement;
+  
 
   function setNbCenters(nb: number) {
     nbCenters = nb;
@@ -122,7 +126,7 @@
         checkArgsCount(2);
         const n = Number(words[1]);
         checkInteger(n);
-        graphs = graphs.with(graphIndex, generateDelaunay(n));
+        graphs = graphs.with(graphIndex, generateDelaunay(n, rng));
       } else {
         throw new Error("Fonction non supportée");
       }
@@ -184,7 +188,7 @@
           <span class="check">✓</span> Retirer
         </button>
         <button
-          class="btn right"
+          class="btn"
           disabled={mode === "play1" || mode === "play2"}
           onclick={() => graphs = graphs.with(graphIndex, emptyGraph())}
         >
@@ -213,7 +217,7 @@
       {setNbCenters}
       {setGraph}
       {edit}
-      play={i => i === 1? (mode = "play1") : (mode = "play2")}
+      play={i => mode = i === 1 ? "play1" : "play2"}
       {simulate}
       {saveGraph}
       {openImportDialog}
@@ -234,21 +238,21 @@
     </div>
     <div class="dialog-buttons">
       <button class="btn rounded-lg" onclick={() => dialogEl.close()}>Annuler</button>
-      <button class="btn rounded-lg" autofocus onclick={importGraph}>OK</button>
+      <button class="btn rounded-lg" onclick={importGraph}>OK</button>
     </div>
   {:else if dialog === "gen"}
     <div class="dialog-title">Générer un graphe</div>
     <div class="dialog-body" >
       <textarea
         class="textarea"
-        cols="800"
-        rows="2"
+        cols="80"
+        rows="1"
         bind:value={genText}
       ></textarea>
     </div>
     <div class="dialog-buttons">
       <button class="btn rounded-lg" onclick={() => dialogEl.close()}>Annuler</button>
-      <button class="btn rounded-lg" autofocus onclick={generateGraph}>OK</button>
+      <button class="btn rounded-lg" onclick={generateGraph}>OK</button>
     </div>
   {/if}
 </dialog>
@@ -270,7 +274,7 @@
   .graph-container {
     width: 40rem;
     touch-action: none;
-    border: 1px solid var(--border);
+    border: 1px solid var(--gray-300);
   }
 
   dialog {
@@ -304,21 +308,5 @@
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-  }
-
-  textarea {
-    display: block;
-    padding: 0.625rem;
-    width: 100%;
-    font-size: 0.875rem;
-    color: var(--gray-900);
-    background-color: var(--gray-50);
-    border-radius: 0.5rem;
-    border: 1px solid var(--border);
-  }
-
-  textarea:focus {
-    outline: 1px solid var(--blue-500);
-    border-color: var(--blue-500);
   }
 </style>

@@ -52,14 +52,11 @@
       x2={200 * x2}
       y1={200 * y1}
       y2={200 * y2}
-      stroke-width="1.5"
-      stroke="blue"
-      pointer-events="none"
+      class="arc"
     />
     <path
       d={arrowPath(200 * x1, 200 * y1, 200 * x2, 200 * y2)}
-      fill="blue"
-      pointer-events="none"
+      class="arc"
     />
   {/each}
   {#each graph.layout as {x, y}, i}
@@ -67,9 +64,7 @@
       cx={200 * x}
       cy={200 * y}
       r="5"
-      stroke="black"
-      fill={labels[i] === -1 ? "white" : labels[i] > 0 ? "lightgreen" : player === 1 ? "lightblue" : "orange"}
-      stroke-width="1"
+      class={labels[i] === -1 ? "empty" : labels[i] > 0 ? "visited" : player === 1 ? "player1" : "player2"}
     />
     {#if labels[i] > 0}
       <text
@@ -101,6 +96,12 @@
     stroke-width: 1;
   }
 
+  .arc {
+    stroke-width: 1.5;
+    stroke: var(--blue-600);
+    fill: var(--blue-600);
+  }
+
   .phone {
     transition: transform linear 1s;
   }
@@ -109,5 +110,29 @@
     font: bold 10px sans-serif;
     fill: black;
     user-select: none;
+  }
+
+  .player1 {
+    fill: var(--player1);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .player2 {
+    fill: var(--player2);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .empty {
+    fill: white;
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .visited {
+    fill: var(--visited);
+    stroke: black;
+    stroke-width: 1;
   }
 </style>

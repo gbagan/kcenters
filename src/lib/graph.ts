@@ -1,4 +1,5 @@
 import { times } from "@gbagan/utils";
+import type { RandomGenerator } from "@gbagan/rng";
 import { tabulate2 } from "./util";
 import { delaunay } from "./delaunay";
 
@@ -21,7 +22,7 @@ export const nbVertices = (graph: Graph) => graph.layout.length;
 
 export const getCoords = (graph: Graph, u: number) => graph.layout[u];
 
-export const getCoordsOfEdge = (graph: Graph, [u, v]: Edge) => {
+export function  getCoordsOfEdge(graph: Graph, [u, v]: Edge) {
   const { x: x1, y: y1 } = getCoords(graph, u);
   const { x: x2, y: y2 } = getCoords(graph, v);
   return { x1, x2, y1, y2 };
@@ -121,11 +122,11 @@ export function grid(n: number, m: number): Graph {
   }
 }
 
-export function generateDelaunay(n: number): Graph {
+export function generateDelaunay(n: number, rng: RandomGenerator): Graph {
   const threshold = n <= 10 ? 0.04 : 0.01; // todo
   const points: Position[] = [];
   while (points.length < n) {
-    const p = {x: 0.05 + 0.9 * Math.random(), y: 0.05 + 0.9 * Math.random()}
+    const p = {x: rng.float(0.05, 0.95), y: rng.float(0.05, 0.95)}
     if (points.every(p2 => (p.x - p2.x) ** 2 + (p.y - p2.y) ** 2 > threshold)) {
       points.push(p);
     }

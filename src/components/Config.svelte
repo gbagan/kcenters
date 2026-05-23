@@ -41,17 +41,16 @@
     <button class="btn right" onclick={exportGraph}>Exporter</button>
   </div>
   <h2>Nombre de centres</h2>
-    <select class="select"
-      value={""+nbCenters}
-      onchange={e => setNbCenters(Number(e.currentTarget.value))}
-    >
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-    </select>
-
+  <select class="select"
+    value={""+nbCenters}
+    onchange={e => setNbCenters(Number(e.currentTarget.value))}
+  >
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
 
   <h2>Actions</h2>
   <div class="btngroup">
@@ -89,21 +88,5 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--gray-900);
-  }
-
-  select {
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-300);
-    color: var(--gray-900);
-    font-size: 0.875rem;
-    border-radius: 0.5rem;
-    display: block;
-    width: 100%;
-    padding: 0.625rem;
-  
-    &:focus {
-      outline: 1px solid var(--blue-500);
-      border-color: var(--blue-500);
-    }
   }
 </style>

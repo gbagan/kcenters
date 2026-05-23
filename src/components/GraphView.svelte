@@ -110,17 +110,13 @@
     {#if centers1.includes(i) && centers2.includes(i)}
       <path
         d="M 0 5 A 5 5 0 0 1 0 -5 Z"
-        fill="lightblue"
-        stroke="black"
-        stroke-width="1"
+        class="player1"
         style:transform="translate({200 * x}px, {200 * y}px)"
         onclick={e => handleNodeClick(i, e)}
       />
       <path
         d="M 0 -5 A 5 5 0 0 1 0 5 Z"
-        fill="orange"
-        stroke="black"
-        stroke-width="1"
+        class="player2"
         style:transform="translate({200 * x}px, {200 * y}px)"
         onclick={e => handleNodeClick(i, e)}
       />
@@ -129,9 +125,7 @@
         cx={200 * x}
         cy={200 * y}
         r={mode === "move" && selectedVertex === i ? 6 : 5}
-        stroke="black"
-        fill={centers1.includes(i) ? "lightblue" : centers2.includes(i) ? "orange" : "white"}
-        stroke-width="1"
+        class={centers1.includes(i) ? "player1" : centers2.includes(i) ? "player2" : "empty"}
         onpointerdown={e => handlePointerDown(i, e)}
         onpointerup={e => handlePointerUp(i, e)}
         onclick={e => handleNodeClick(i, e)}
@@ -154,6 +148,36 @@
 <style>
   .edge {
     stroke: var(--gray-300);
+    stroke-width: 1;
+  }
+
+  .player1 {
+    fill: var(--player1);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .player2 {
+    fill: var(--player2);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .player1 {
+    fill: var(--player1);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .player2 {
+    fill: var(--player2);
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .empty {
+    fill: white;
+    stroke: black;
     stroke-width: 1;
   }
 </style>

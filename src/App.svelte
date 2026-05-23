@@ -7,6 +7,7 @@
   import Config from "./components/Config.svelte";
   import Simulation from "./components/Simulation.svelte";
   import { xoroshiro128Plus } from '@gbagan/rng';
+    import { tick } from 'svelte';
 
   let graphs = $state.raw(initialGraphs);
   let graphIndex = $state(0);
@@ -22,7 +23,8 @@
   const rng = xoroshiro128Plus();
 
   let dialogEl!: HTMLDialogElement;
-  
+  let importTextArea: HTMLTextAreaElement | undefined = $state();  
+  let genTextArea: HTMLTextAreaElement | undefined = $state();
 
   function setNbCenters(nb: number) {
     nbCenters = nb;
@@ -82,15 +84,19 @@
       .readText()
       .then((text) => dialogContent = text)
       .catch(() => dialogContent = "")
-      .finally(() => {
+      .finally(async () => {
         dialog = "import";
         dialogEl.showModal();
+        await tick();
+        importTextArea?.focus();
       })
   }
 
-  function openGenDialog() {
+  async function openGenDialog() {
     dialog = "gen";
     dialogEl.showModal();
+    await tick();
+    genTextArea?.focus();
   }
 
   function exportGraph() {
@@ -233,6 +239,7 @@
         class="textarea"
         cols="100"
         rows="20"
+        bind:this={importTextArea}
         bind:value={dialogContent}
       ></textarea>
     </div>
@@ -242,11 +249,12 @@
     </div>
   {:else if dialog === "gen"}
     <div class="dialog-title">Générer un graphe</div>
-    <div class="dialog-body" >
+    <div class="dialog-body">
       <textarea
         class="textarea"
         cols="80"
         rows="1"
+        bind:this={genTextArea}
         bind:value={genText}
       ></textarea>
     </div>
@@ -274,7 +282,7 @@
   .graph-container {
     width: 40rem;
     touch-action: none;
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--border);
   }
 
   dialog {
